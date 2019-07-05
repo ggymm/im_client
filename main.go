@@ -4,22 +4,17 @@ import (
 	"bufio"
 	"encoding/json"
 	"github.com/davyxu/cellnet"
-	"github.com/davyxu/cellnet/peer"
 	_ "github.com/davyxu/cellnet/peer/tcp"
-	"github.com/davyxu/cellnet/proc"
 	_ "github.com/davyxu/cellnet/proc/tcp"
-	"github.com/davyxu/golog"
 	"im_client/client"
-	"im_client/config"
 	"im_client/constant"
 	"im_client/ui"
 	"im_client/utils"
+	"log"
 	"os"
 	"strings"
 	"time"
 )
-
-var log = golog.New("client")
 
 var userId int64 = 0
 
@@ -38,38 +33,6 @@ func ReadConsole(callback func(string)) {
 
 //noinspection GoUnusedExportedFunction
 func StartClient() {
-	peerType := config.Config.Get("cellnet.peerType").(string)
-	name := config.Config.Get("cellnet.name").(string)
-	addr := config.Config.Get("cellnet.addr").(string)
-	procName := config.Config.Get("cellnet.procName").(string)
-	queue := cellnet.NewEventQueue()
-	genericPeer := peer.NewGenericPeer(peerType, name, addr, queue)
-	proc.BindProcessorHandler(genericPeer, procName, func(ev cellnet.Event) {
-		switch msg := ev.Message().(type) {
-		case *cellnet.SessionConnected:
-			log.Debugln("client connected")
-		case *cellnet.SessionClosed:
-			log.Debugln("client error")
-		case *client.Message:
-			if msg.Cmd == client.CmdTypeLoginResp {
-				// 展示未读消息
-				chatUnReadMsgListString := msg.Extras
-				var chatUnReadMsgList []map[string]string
-				if err := json.Unmarshal([]byte(chatUnReadMsgListString), &chatUnReadMsgList); err == nil {
-					log.Errorln(err)
-				}
-				for chatUnReadMsg := range chatUnReadMsgList {
-					log.Infof("%s", chatUnReadMsg)
-				}
-			} else {
-				log.Infof("%s", msg)
-			}
-		}
-	})
-	genericPeer.Start()
-	queue.StartLoop()
-	log.Debugln("Ready to chat!")
-
 	// 阻塞的从命令行获取聊天输入
 	ReadConsole(func(str string) {
 		// 判断是不是注册消息
@@ -77,10 +40,10 @@ func StartClient() {
 			// 注册消息：login 1
 			loginInfos := strings.Split(str, " ")
 			if err := utils.StrToInt(loginInfos[1], &userId); err != nil {
-				log.Errorln(err.Error())
+				log.Println(err.Error())
 			}
 			// 发送注册方法
-			genericPeer.(interface {
+			client.GenericPeer.(interface {
 				Session() cellnet.Session
 			}).Session().Send(&client.Message{
 				From:       userId,
@@ -103,7 +66,7 @@ func StartClient() {
 				contentMap["friendId"] = getMessageInfos[1]
 				contentString, _ := json.Marshal(contentMap)
 				// 发送获取消息方法
-				genericPeer.(interface {
+				client.GenericPeer.(interface {
 					Session() cellnet.Session
 				}).Session().Send(&client.Message{
 					From:       userId,
@@ -117,7 +80,7 @@ func StartClient() {
 					Extras:     constant.Empty,
 				})
 			} else {
-				log.Errorln("未注册！")
+				log.Println("未注册！")
 			}
 		} else if strings.Contains(str, " ") {
 			if userId != 0 {
@@ -125,9 +88,9 @@ func StartClient() {
 				msgInfo := strings.Split(str, " ")
 				var friendId int64
 				if err := utils.StrToInt(msgInfo[1], &friendId); err != nil {
-					log.Errorln(err.Error())
+					log.Println(err.Error())
 				}
-				genericPeer.(interface {
+				client.GenericPeer.(interface {
 					Session() cellnet.Session
 				}).Session().Send(&client.Message{
 					From:       userId,
@@ -141,16 +104,15 @@ func StartClient() {
 					Extras:     constant.Empty,
 				})
 			} else {
-				log.Errorln("未注册！")
+				log.Println("未注册！")
 			}
 		} else {
-			log.Errorln("消息格式不正确！")
+			log.Println("消息格式不正确！")
 		}
 	})
 }
 
 func main() {
-
 	ui.StartView()
-	// StartClient()
+	client.StartClient()
 }
