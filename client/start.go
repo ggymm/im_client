@@ -13,6 +13,8 @@ import (
 
 var log = golog.New("client.start")
 
+var UserId int64 = 0
+
 var GenericPeer cellnet.GenericPeer
 
 func StartClient() {

@@ -45,7 +45,6 @@ type FriendItem struct {
 
 func StartView() {
 	mainWindow := &ChatMainWindow{friendListModel: GetFriendList()}
-	// 不允许缩放窗口，不允许最大化窗口
 	mainWindow.SetMaximizeBox(false)
 	mainWindow.SetFixedSize(true)
 	var inTE, outTE *walk.TextEdit
