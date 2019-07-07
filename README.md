@@ -22,3 +22,11 @@ D:\develope\projects\go\bin\rsrc -manifest main.manifest -o im_client.syso
 
 
 go build -ldflags="-H windowsgui"
+
+
+
+Run -> Edit Configurations -> Run kind: Directory/Directory: 项目目录 -> Run -> Run 'go build 项目名称'
+                              
+                              
+不要直接在main.go文件上点击右键运行
+

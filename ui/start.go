@@ -4,7 +4,6 @@ import (
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
 	"log"
-	"strings"
 )
 
 const (
@@ -15,13 +14,15 @@ const (
 	friendWidth = 200
 	chartWidth  = 600
 	chatHeight  = 450
-	msgHeight   = 116
+	msgHeight   = 117
 )
 
 type ChatMainWindow struct {
 	*walk.MainWindow
 	friendList      *walk.ListBox
 	friendListModel *FriendListModel
+	chatContentList *walk.TextEdit
+	msgContent      *walk.TextEdit
 }
 
 type FriendListModel struct {
@@ -47,14 +48,13 @@ func StartView() {
 	mainWindow := &ChatMainWindow{friendListModel: GetFriendList()}
 	mainWindow.SetMaximizeBox(false)
 	mainWindow.SetFixedSize(true)
-	var inTE, outTE *walk.TextEdit
 	if err := (MainWindow{
 		AssignTo: &mainWindow.MainWindow,
 		Title:    title,
-		Icon:     icon,
-		Size:     Size{Width: allWidth, Height: allHeight},
-		MinSize:  Size{Width: allWidth, Height: allHeight},
-		Layout:   HBox{MarginsZero: true, SpacingZero: true},
+		/*Icon:     icon,*/
+		Size:    Size{Width: allWidth, Height: allHeight},
+		MinSize: Size{Width: allWidth, Height: allHeight},
+		Layout:  HBox{MarginsZero: true, SpacingZero: true},
 		Children: []Widget{
 			ListBox{
 				AssignTo:              &mainWindow.friendList,
@@ -69,7 +69,7 @@ func StartView() {
 				Layout:  VBox{MarginsZero: true, SpacingZero: true},
 				Children: []Widget{
 					TextEdit{
-						AssignTo: &outTE,
+						AssignTo: &mainWindow.chatContentList,
 						ReadOnly: true,
 						MaxSize:  Size{Height: chatHeight},
 					},
@@ -80,7 +80,7 @@ func StartView() {
 						Children: []Widget{
 							TextEdit{
 								ColumnSpan: 9,
-								AssignTo:   &inTE,
+								AssignTo:   &mainWindow.msgContent,
 								VScroll:    true,
 								MinSize:    Size{Height: msgHeight},
 								MaxSize:    Size{Height: msgHeight},
@@ -91,7 +91,7 @@ func StartView() {
 								MinSize:    Size{Height: msgHeight},
 								MaxSize:    Size{Height: msgHeight},
 								OnClicked: func() {
-									outTE.SetText(strings.ToUpper(inTE.Text()))
+									// 发送消息到服务端
 								},
 							},
 						},
