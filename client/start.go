@@ -13,7 +13,7 @@ import (
 
 var log = golog.New("client.start")
 
-var UserId int64 = 0
+var UserId int64 = 1
 
 var GenericPeer cellnet.GenericPeer
 
@@ -27,9 +27,9 @@ func StartClient() {
 	proc.BindProcessorHandler(GenericPeer, procName, func(ev cellnet.Event) {
 		switch msg := ev.Message().(type) {
 		case *cellnet.SessionConnected:
-			log.Debugln("client connected")
+			log.Infoln("client connected")
 		case *cellnet.SessionClosed:
-			log.Debugln("client error")
+			log.Infoln("client error")
 		case *Message:
 			if msg.Cmd == CmdTypeLoginResp {
 				// 展示未读消息
@@ -39,14 +39,13 @@ func StartClient() {
 					log.Errorln(err)
 				}
 				for chatUnReadMsg := range chatUnReadMsgList {
-					log.Infof("%s", chatUnReadMsg)
+					log.Infoln("%s", chatUnReadMsg)
 				}
 			} else {
-				log.Infof("%s", msg)
+				log.Infoln("%s", msg)
 			}
 		}
 	})
 	GenericPeer.Start()
 	queue.StartLoop()
-	log.Debugln("Ready to chat!")
 }

@@ -1,14 +1,14 @@
-package ui
+package client
 
 import (
+	"fmt"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
-	"log"
+	"strconv"
 )
 
 const (
 	title       = "聊天客户端"
-	icon        = "ui/chat.ico"
 	allWidth    = 800
 	allHeight   = 600
 	friendWidth = 200
@@ -44,17 +44,16 @@ type FriendItem struct {
 	Value string
 }
 
-func StartView() {
+func StartView() error {
 	mainWindow := &ChatMainWindow{friendListModel: GetFriendList()}
 	mainWindow.SetMaximizeBox(false)
 	mainWindow.SetFixedSize(true)
 	if err := (MainWindow{
 		AssignTo: &mainWindow.MainWindow,
 		Title:    title,
-		/*Icon:     icon,*/
-		Size:    Size{Width: allWidth, Height: allHeight},
-		MinSize: Size{Width: allWidth, Height: allHeight},
-		Layout:  HBox{MarginsZero: true, SpacingZero: true},
+		Size:     Size{Width: allWidth, Height: allHeight},
+		MinSize:  Size{Width: allWidth, Height: allHeight},
+		Layout:   HBox{MarginsZero: true, SpacingZero: true},
 		Children: []Widget{
 			ListBox{
 				AssignTo:              &mainWindow.friendList,
@@ -92,6 +91,10 @@ func StartView() {
 								MaxSize:    Size{Height: msgHeight},
 								OnClicked: func() {
 									// 发送消息到服务端
+									msgContent := mainWindow.msgContent.Text()
+									fmt.Println(mainWindow.friendList.CurrentIndex())
+									friendId := mainWindow.friendListModel.items[mainWindow.friendList.CurrentIndex()].Id
+									SendMsg(msgContent, friendId)
 								},
 							},
 						},
@@ -100,9 +103,10 @@ func StartView() {
 			},
 		},
 	}.Create()); err != nil {
-		log.Fatal(err)
+		return err
 	}
 	mainWindow.Run()
+	return nil
 }
 
 func GetFriendList() *FriendListModel {
@@ -110,18 +114,17 @@ func GetFriendList() *FriendListModel {
 	for i := 0; i < 10; i++ {
 		friendListModel.items[i] = FriendItem{
 			Id:    int64(i),
-			Name:  "name",
-			Value: string(i),
+			Name:  "name" + strconv.Itoa(i),
+			Value: strconv.Itoa(i),
 		}
 	}
 
 	return friendListModel
 }
 
-func (mw *ChatMainWindow) FriendCurrentIndexChanged() {
+func (chatMainWindow *ChatMainWindow) FriendCurrentIndexChanged() {
 
 }
 
-func (mw *ChatMainWindow) FriendItemActivated() {
-
+func (chatMainWindow *ChatMainWindow) FriendItemActivated() {
 }

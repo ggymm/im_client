@@ -1,3 +1,7 @@
+icon = "ui/chat.ico"
+Icon: icon,
+
+
 replace github.com/lxn/walk => D:/develope/projects/go/local/walk
 
 
